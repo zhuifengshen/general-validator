@@ -19,7 +19,7 @@ class ReleaseManager:
     def __init__(self, project_root: str = None):
         self.project_root = Path(project_root) if project_root else Path.cwd()
         self.pyproject_path = self.project_root / "pyproject.toml"
-        self.version_file = self.project_root / "src" / "data_checker" / "__init__.py"
+        self.version_file = self.project_root / "src" / "general_validator" / "__init__.py"
         
     def run_command(self, command: str, check: bool = True) -> Tuple[int, str, str]:
         """执行命令并返回结果"""

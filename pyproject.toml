@@ -17,7 +17,7 @@ dependencies = [
 ]
 
 [tool.poetry]
-packages = [{include = "data_checker", from = "src"}]
+packages = [{include = "general_validator", from = "src"}]
 
 
 [build-system]

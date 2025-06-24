@@ -49,17 +49,17 @@ build: clean
 
 # 获取当前版本号
 current-version:
-	@python -c "import re; content=open('src/data_checker/__init__.py').read(); print(re.search(r'__version__ = \"([^\"]+)\"', content).group(1))"
+	@python -c "import re; content=open('src/general_validator/__init__.py').read(); print(re.search(r'__version__ = \"([^\"]+)\"', content).group(1))"
 
 # 计算下一个版本号
 next-patch:
-	@python -c "import re; content=open('src/data_checker/__init__.py').read(); version=re.search(r'__version__ = \"([^\"]+)\"', content).group(1); parts=version.split('.'); parts[2]=str(int(parts[2])+1); print('.'.join(parts))"
+	@python -c "import re; content=open('src/general_validator/__init__.py').read(); version=re.search(r'__version__ = \"([^\"]+)\"', content).group(1); parts=version.split('.'); parts[2]=str(int(parts[2])+1); print('.'.join(parts))"
 
 next-minor:
-	@python -c "import re; content=open('src/data_checker/__init__.py').read(); version=re.search(r'__version__ = \"([^\"]+)\"', content).group(1); parts=version.split('.'); parts[1]=str(int(parts[1])+1); parts[2]='0'; print('.'.join(parts))"
+	@python -c "import re; content=open('src/general_validator/__init__.py').read(); version=re.search(r'__version__ = \"([^\"]+)\"', content).group(1); parts=version.split('.'); parts[1]=str(int(parts[1])+1); parts[2]='0'; print('.'.join(parts))"
 
 next-major:
-	@python -c "import re; content=open('src/data_checker/__init__.py').read(); version=re.search(r'__version__ = \"([^\"]+)\"', content).group(1); parts=version.split('.'); parts[0]=str(int(parts[0])+1); parts[1]='0'; parts[2]='0'; print('.'.join(parts))"
+	@python -c "import re; content=open('src/general_validator/__init__.py').read(); version=re.search(r'__version__ = \"([^\"]+)\"', content).group(1); parts=version.split('.'); parts[0]=str(int(parts[0])+1); parts[1]='0'; parts[2]='0'; print('.'.join(parts))"
 
 # 交互式发布
 release:

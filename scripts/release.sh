@@ -14,7 +14,7 @@ NC='\033[0m' # No Color
 # 项目根目录
 PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 PYPROJECT_FILE="$PROJECT_ROOT/pyproject.toml"
-VERSION_FILE="$PROJECT_ROOT/src/data_checker/__init__.py"
+VERSION_FILE="$PROJECT_ROOT/src/general_validator/__init__.py"
 
 # 日志函数
 log_info() {
