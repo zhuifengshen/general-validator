@@ -1,0 +1,21 @@
+[project]
+name = "data-checker"
+version = "0.8.0"
+description = "Data-Checker is a universal batch data validator."
+authors = [
+    {name = "Devin",email = "zhangchuzhao@dingtalk.com"}
+]
+readme = "README.md"
+requires-python = ">=3.6"
+dependencies = [
+    "colorama (==0.4.1)",
+    "colorlog (==4.0.2)"
+]
+
+[tool.poetry]
+packages = [{include = "data_checker", from = "src"}]
+
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
