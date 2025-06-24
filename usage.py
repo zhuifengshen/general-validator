@@ -4,8 +4,8 @@
 新数据校验函数使用示例
 """
 
-from src.data_checker.logger import setup_logger
-from src.data_checker.checker import check, check_list, check_nested, checker
+from src.general_validator.logger import setup_logger
+from src.general_validator.checker import check, check_list, check_nested, checker
 
 def example_api_response_validation():
     """API响应数据校验示例"""

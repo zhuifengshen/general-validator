@@ -292,10 +292,10 @@ class ReleaseManager:
             
             if test_pypi:
                 print("📦 测试安装命令:")
-                print(f"pip install -i https://test.pypi.org/simple/ data-checker=={new_version}")
+                print(f"pip install -i https://test.pypi.org/simple/ general-validator=={new_version}")
             else:
                 print("📦 安装命令:")
-                print(f"pip install data-checker=={new_version}")
+                print(f"pip install general-validator=={new_version}")
         else:
             print("❌ 发布失败")
             sys.exit(1)

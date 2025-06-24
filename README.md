@@ -1,8 +1,8 @@
-# Data-Checker
+# General-Validator
 
 ## 概述
 
-data-checker 是一款极简通用数据批量校验器，支持所有常用校验器，适用于数据接口测试中各种校验场景。
+general-validator 是一款极简通用数据批量校验器，支持所有常用校验器，适用于数据接口测试中各种校验场景。
 
 ## 核心特性
 

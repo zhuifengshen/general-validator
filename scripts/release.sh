@@ -303,10 +303,10 @@ release() {
         
         if [[ "$test_pypi" == "true" ]]; then
             echo -e "${BLUE}📦 测试安装命令:${NC}"
-            echo "pip install -i https://test.pypi.org/simple/ data-checker==$new_version"
+            echo "pip install -i https://test.pypi.org/simple/ general-validator==$new_version"
         else
             echo -e "${BLUE}📦 安装命令:${NC}"
-            echo "pip install data-checker==$new_version"
+            echo "pip install general-validator==$new_version"
         fi
     else
         log_error "发布失败"

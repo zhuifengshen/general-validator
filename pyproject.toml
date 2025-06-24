@@ -1,11 +1,15 @@
 [project]
-name = "data-checker"
+name = "general-validator"
 version = "0.8.0"
-description = "Data-Checker is a universal batch data validator."
+description = "General-Validator is a universal batch data validator."
 authors = [
     {name = "Devin",email = "zhangchuzhao@dingtalk.com"}
 ]
 readme = "README.md"
+homepage = "https://github.com/zhuifengshen/general-validator"
+repository = "https://github.com/zhuifengshen/general-validator"
+documentation = "https://github.com/zhuifengshen/general-validator"
+license = {file = "LICENSE"}
 requires-python = ">=3.6"
 dependencies = [
     "colorama (==0.4.1)",

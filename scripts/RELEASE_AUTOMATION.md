@@ -87,7 +87,7 @@ make release-patch MESSAGE="修复API响应解析问题"
 make release-test VERSION=2.9.0
 
 # 测试安装
-pip install -i https://test.pypi.org/simple/ data-checker==2.9.0
+pip install -i https://test.pypi.org/simple/ general-validator==2.9.0
 
 # 确认无问题后发布到正式环境
 make release VERSION=2.9.0
