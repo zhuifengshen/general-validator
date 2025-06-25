@@ -1,6 +1,6 @@
 [project]
 name = "general-validator"
-version = "0.8.0"
+version = "0.8.1"
 description = "General-Validator is a universal batch data validator."
 authors = [
     {name = "Devin",email = "zhangchuzhao@dingtalk.com"}
