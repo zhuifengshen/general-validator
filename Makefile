@@ -4,7 +4,7 @@
 
 # 默认目标
 help:
-	@echo "命令使用说明"
+	@echo "<发布命令使用说明>"
 	@echo ""
 	@echo "开发命令:"
 	@echo "  install       安装项目依赖"
