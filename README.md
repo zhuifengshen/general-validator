@@ -42,22 +42,28 @@ check_not_empty(data, *field_paths)
 
 ### 3. check_when() - 条件校验
 ```python
-check_when(data, condition, then)
+check_when(data, condition, *then)
 ```
 
 ### 4. check_list() - 列表批量校验
 
 ```python
-check_list(data_list, *field_names, **validators)
+check_list(data_list, *validations)
 ```
 
-### 5. check_nested() - 嵌套列表校验
+### 5. check_array() - 列表批量校验（参数示意版）
+
+```python
+check_array(data_list, *field_names, **validators)
+```
+
+### 6. check_nested() - 嵌套列表校验
 
 ```python
 check_nested(data, list_path, nested_field, *field_validations)
 ```
 
-### 6. checker() - 链式调用
+### 7. checker() - 链式调用
 
 ```python
 checker(data).not_empty("field1").equals("field2", value).validate()
@@ -250,7 +256,7 @@ check_not_empty(response, "data.product.id", "data.product.name", "message")
 # 2. 列表批量校验
 check_list(response["data"]["productList"], 
            "id", "name",                    # 默认非空
-           price="> 0", id="> 0")           # 带校验器
+           "price > 0", "id > 0")           # 带校验器
 
 # 3. 嵌套列表校验
 check_nested(response, "data.productList", "purchasePlan",
@@ -323,26 +329,24 @@ request:
 
 validate:
   # 极简语法 - 默认非空
-  - check: ["content.data.product.id", "content.data.product.name"]
+  - ${check(content, "content.data.product.id", "content.data.product.name")}
+  - True
   
   # 带校验器的简洁语法
-  - check: ["status_code == 200", "content.data.product.id > 0"]
+  - ${check(content, "status_code == 200", "content.data.product.id > 0")}
+  - True
   
   # 通配符批量校验
-  - check: ["content.data.productList.*.id", "content.data.productList.*.name"]
-  
+  - check(content, "content.data.productList.*.id", "content.data.productList.*.name")
+  - True
+
   # 列表专用
-  - check_list: 
-      data: "content.data.productList"
-      fields: ["id", "name"] 
-      validators: {"price": "> 0"}
+  - ${check_list("content.data.productList", "id", "name", "price = > 0")}
+  - True
       
   # 嵌套列表专用
-  - check_nested:
-      data: "content"
-      list_path: "data.productList"
-      nested_field: "purchasePlan"
-      validations: ["id > 0", "name", "amount >= 100"]
+  - ${check_nested(content, "data.productList", "purchasePlan", "id > 0", "name", "amount >= 100")}
+  - True
 ```
 
 ### Python测试文件中使用
@@ -368,7 +372,7 @@ class TestProducts:
         # 列表批量校验
         check_list(response["data"]["productList"],
                    "id", "name", "price",           # 非空校验
-                   id="> 0", price=">= 0")          # 数值校验
+                   "id > 0", "price >= 0")          # 数值校验
     
     def test_nested_purchase_plan(self, response):
         """嵌套购买计划测试"""

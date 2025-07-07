@@ -22,7 +22,6 @@ def get_nested_value(obj, path):
 
     return current
 
-
 def is_empty_value(value):
     """判断值是否为空"""
     if value is None:
@@ -40,6 +39,7 @@ def is_empty_value(value):
 """
 极简通用数据校验 - 默认非空校验，调用简洁
 """
+
 def check(data, *validations):
     """
     极简数据校验函数 - 默认非空校验
@@ -400,14 +400,23 @@ def _execute_validator(validator, check_value, expect_value, field_path):
         elif validator == "conditional_check":
             # 条件校验逻辑 - 复用现有的解析和校验逻辑
             condition_rule = expect_value['condition']
-            then_rule = expect_value['then']
+            then_rules = expect_value['then']
             
             # 解析并执行条件校验
             condition_result = _parse_and_validate(check_value, condition_rule)
             
             # 如果条件满足，执行then校验
             if condition_result:
-                return _parse_and_validate(check_value, then_rule)
+                # 支持单个then校验或多个then校验
+                if isinstance(then_rules, list):
+                    # 多个then校验，全部校验通过才算成功
+                    for then_rule in then_rules:
+                        if not _parse_and_validate(check_value, then_rule):
+                            return False
+                    return True
+                else:
+                    # 单个then校验（即字典格式条件校验时then为字符串）
+                    return _parse_and_validate(check_value, then_rules)
             
             # 条件不满足，跳过校验（返回True）
             return True
@@ -432,46 +441,69 @@ def check_not_empty(data, *field_paths):
     return check(data, *field_paths)
 
 
-def check_when(data, condition, then):
+def check_when(data, condition, *then):
     """
-    条件校验 - 当条件满足时执行then校验
+    条件校验 - 当条件满足时执行then校验（支持批量校验）
     
     :param data: 要校验的数据
     :param condition: 条件表达式，支持所有校验器语法
-    :param then: then表达式，支持所有校验器语法
+    :param then: then表达式，支持所有校验器语法，可传入多个校验规则
     :return: True表示校验通过，False表示校验失败
     :raises: Exception: 当参数错误或数据结构异常时抛出异常
     
     示例：
-    # 当status为active时，price必须大于0
+    # 单个then校验 - 当status为active时，price必须大于0
     check_when(data, "status == 'active'", "price > 0")
     
-    # 当type为premium时，features字段不能为空
-    check_when(data, "type == 'premium'", "features")
+    # 多个then校验 - 当type为premium时，features字段不能为空且price必须大于100
+    check_when(data, "type == 'premium'", "features", "price > 100")
     
-    # 支持通配符 - 当所有产品状态为active时，价格都必须大于0
-    check_when(data, "products.*.status == 'active'", "products.*.price > 0")
+    # 批量校验 - 当status为active时，多个字段都必须校验通过
+    check_when(data, "status == 'active'", 
+               "price > 0", 
+               "name", 
+               "description",
+               "category != 'test'")
     
-    注意：日志输出级别可通过项目的 --log-level 参数控制
+    # 支持通配符 - 当所有产品状态为active时，价格都必须大于0且名称不能为空
+    check_when(data, "products.*.status == 'active'", 
+               "products.*.price > 0", 
+               "products.*.name")
+    
+    # 混合条件校验 - 当用户为VIP时，多个权限字段都必须校验
+    check_when(data, "user.level == 'vip'", 
+               "user.permissions.download == true",
+               "user.permissions.upload == true", 
+               "user.quota > 1000")
+    
+    注意：
+    1. 当条件满足时，所有then校验都必须通过才算成功
+    2. 当条件不满足时，跳过所有then校验（返回True）
+    3. 日志输出级别可通过项目的 --log-level 参数控制
     """
+    
+    # 参数验证
+    if not then:
+        raise ValueError("至少需要提供一个then校验规则")
+    
+    # 构建条件校验规则
     conditional_rule = {
         'field': 'conditional',
         'validator': 'conditional_check',
         'expect': {
             'condition': condition,
-            'then': then
+            'then': list(then)
         }
     }
     return check(data, conditional_rule)
 
 
-def check_list(data_list, *field_names, **validators):
+def check_list(data_list, *validations):
     """
     列表数据批量校验 - 简化版
     
-    :param data_list: 数据列表
-    :param field_names: 字段名（默认非空校验）
-    :param validators: 带校验器的字段 {"field_name": "validator expression"}
+    :param data_list: 要校验的数据列表
+    :param validations: 校验规则，支持所有校验器语法，自动应用于数组每个元素
     :return: True表示所有校验通过，False表示存在校验失败
     :raises: Exception: 当参数错误或数据结构异常时抛出异常
     
@@ -479,11 +511,125 @@ def check_list(data_list, *field_names, **validators):
     # 默认非空校验
     check_list(productList, "id", "name", "price")
     
+    # 带校验器的校验
+    check_list(productList, "id > 0", "name", "price >= 0", "status == 'active'")
+    
+    # 混合校验类型
+    check_list(productList, 
+                "id > 0",                    # 数值比较
+                "name",                      # 默认非空
+                "price >= 10.5",             # 浮点数比较
+                "status == 'active'",        # 字符串等值
+                "category != 'test'",        # 不等于
+                "description *= 'good'",     # 包含字符串
+                "tags #> 0")                 # 数组长度大于0
+    
+    # 类型校验
+    check_list(productList, 
+                "id @= int",                 # 整数类型
+                "name @= str",               # 字符串类型
+                "price @= float",            # 浮点数类型
+                "is_active @= bool")         # 布尔类型
+    
+    # 长度校验
+    check_list(productList, 
+                "name #>= 3",                # 名称长度至少3个字符
+                "description #<= 100",       # 描述长度最多100个字符
+                "tags #> 0")                 # 标签数组不能为空
+    
+    # 字符串校验
+    check_list(productList, 
+                "name ^= 'Product'",         # 名称以'Product'开头
+                "url ~= '^https://'",        # URL正则匹配
+                "email $= '@example.com'")   # 邮箱以指定域名结尾
+    
+    # 复杂组合校验
+    check_list(productList, 
+                "id > 0", 
+                "name", 
+                "price >= 0", 
+                "status == 'active'",
+                "category != 'test'",
+                "description #>= 10",
+                "tags #> 0",
+                "created_at")
+    
+    # 与其他函数风格对比：
+    # check_array 风格：
+    # check_array(productList, "name", "id", price="> 0", status="== 'active'")
+    # 
+    # check_list 风格（与check函数一致）：
+    # check_list(productList, "name", "id", "price > 0", "status == 'active'")
+    
+    注意：
+    1. 函数会自动为每个字段路径添加 "*." 前缀来处理数组元素
+    2. 如果校验规则已经包含通配符 "*"，则不会重复添加
+    3. 支持所有校验器语法，与 check() 函数完全一致
+    4. 日志输出级别可通过项目的 --log-level 参数控制
+    """
+    
+    # 参数验证
+    if not validations:
+        raise ValueError("至少需要提供一个校验规则")
+    
+    if not isinstance(data_list, list):
+        raise TypeError(f"data_list必须是列表，当前类型: {type(data_list)}")
+    
+    # 打印任务信息
+    log_info(f"列表数据批量校验（统一风格） - 列表长度: {len(data_list)}, 校验规则数: {len(validations)}")
+    log_debug(f"校验规则: {list(validations)}")
+    
+    # 处理校验规则，自动添加 "*." 前缀
+    processed_rules = []
+    for validation in validations:
+        if isinstance(validation, str):
+            # 字符串格式的校验规则
+            if '*' in validation:
+                # 如果已经包含通配符，直接使用
+                processed_rules.append(validation)
+            else:
+                # 自动添加 "*." 前缀
+                processed_rules.append(f"*.{validation}")
+        elif isinstance(validation, dict):
+            # 字典格式的校验规则
+            field_path = validation.get('field', '')
+            if '*' in field_path:
+                # 如果已经包含通配符，直接使用
+                processed_rules.append(validation)
+            else:
+                # 自动添加 "*." 前缀
+                new_validation = validation.copy()
+                new_validation['field'] = f"*.{field_path}"
+                processed_rules.append(new_validation)
+        else:
+            # 其他格式直接使用
+            processed_rules.append(validation)
+    
+    log_debug(f"处理后的校验规则: {processed_rules}")
+    
+    # 调用底层的 check 函数进行校验
+    return check(data_list, *processed_rules)
+
+
+def check_array(data_list, *field_names, **validators):
+    """
+    列表数据批量校验 - 参数示意版
+    
+    :param data_list: 数据列表
+    :param field_names: 字段名（默认非空校验）
+    :param validators: 带校验器的字段 field_name="validator expression"
+    :return: True表示所有校验通过，False表示存在校验失败
+    :raises: Exception: 当参数错误或数据结构异常时抛出异常
+    
+    示例：
+    # 默认非空校验
+    check_array(productList, "id", "name", "price")
+    
     # 带校验器
-    check_list(productList, "name", id="> 0", price=">= 0")
+    check_array(productList, "name", id="> 0", price=">= 0")
     
     # 混合使用
-    check_list(productList, "name", "description", id="> 0", status="== 'active'")
+    check_array(productList, "name", "description", id="> 0", status="== 'active'")
     
     注意：日志输出级别可通过项目的 --log-level 参数控制
     """
@@ -861,30 +1007,60 @@ class DataChecker:
         return self
     
     # 条件校验
-    def when(self, condition, then):
+    def when(self, condition, *then):
         """
-        条件校验：当条件满足时，执行then校验
+        条件校验：当条件满足时，执行then校验（支持批量校验）
         
         :param condition: 条件表达式，支持所有校验器语法
-        :param then: then表达式，支持所有校验器语法
+        :param then: then表达式，支持所有校验器语法，可传入多个校验规则
         :return: self（支持链式调用）
         
         示例：
-        # 当status为active时，price必须大于0
+        # 单个then校验 - 当status为active时，price必须大于0
         .when("status == 'active'", "price > 0")
         
-        # 当type为premium时，features字段不能为空
-        .when("type == 'premium'", "features")
+        # 多个then校验 - 当type为premium时，features字段不能为空且price必须大于100
+        .when("type == 'premium'", "features", "price > 100")
         
-        # 支持通配符
-        .when("products.*.status == 'active'", "products.*.price > 0")
+        # 批量校验 - 当status为active时，多个字段都必须校验通过
+        .when("status == 'active'", 
+              "price > 0", 
+              "name", 
+              "description",
+              "category != 'test'")
+        
+        # 支持通配符 - 当所有产品状态为active时，价格都必须大于0且名称不能为空
+        .when("products.*.status == 'active'", 
+              "products.*.price > 0", 
+              "products.*.name")
+        
+        # 链式调用示例
+        checker(data).when("user.level == 'vip'", 
+                          "user.permissions.download == true",
+                          "user.permissions.upload == true", 
+                          "user.quota > 1000") \
+                     .when("user.status == 'active'", 
+                          "user.last_login", 
+                          "user.email") \
+                     .validate()
+        
+        注意：
+        1. 当条件满足时，所有then校验都必须通过才算成功
+        2. 当条件不满足时，跳过所有then校验（返回True）
+        3. 支持链式调用，可以添加多个条件校验
         """
+        
+        # 参数验证
+        if not then:
+            raise ValueError("至少需要提供一个then校验规则")
+        
+        # 构建条件校验规则
         self.rules.append({
             'field': 'conditional',
             'validator': 'conditional_check',
             'expect': {
                 'condition': condition,
-                'then': then
+                'then': list(then)
             }
         })
         return self
