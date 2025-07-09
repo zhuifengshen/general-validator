@@ -48,22 +48,16 @@ check_when(data, condition, *then)
 ### 4. check_list() - 列表批量校验
 
 ```python
-check_list(data_list, *validations)
+check_list(data_list, *field_names, **validators)
 ```
 
-### 5. check_array() - 列表批量校验（参数示意版）
-
-```python
-check_array(data_list, *field_names, **validators)
-```
-
-### 6. check_nested() - 嵌套列表校验
+### 5. check_nested() - 嵌套列表校验
 
 ```python
 check_nested(data, list_path, nested_field, *field_validations)
 ```
 
-### 7. checker() - 链式调用
+### 6. checker() - 链式调用
 
 ```python
 checker(data).not_empty("field1").equals("field2", value).validate()

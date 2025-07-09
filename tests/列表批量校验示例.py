@@ -8,7 +8,7 @@ import sys
 import os
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'src'))
 
-from general_validator.checker import check_array, check_list, check, checker
+from general_validator.checker import check_list, check, checker
 
 # 测试数据
 test_products = [
@@ -101,30 +101,17 @@ def test_complex_validations():
     print(f"复杂组合校验结果: {result}")
 
 
-def test_wildcard_handling():
-    """测试通配符处理"""
-    print("\n=== 测试通配符处理 ===")
-    
-    # 带通配符的校验规则（不应该重复添加 "*."）
-    result = check_list(test_products, "*.id > 0", "*.name", "price >= 0")
-    print(f"通配符处理结果: {result}")
-    
-    # 混合通配符和普通字段
-    result = check_list(test_products, "*.id > 0", "name", "*.price >= 0")
-    print(f"混合通配符处理结果: {result}")
-
-
 def test_style_comparison():
     """测试与其他函数风格的对比"""
     print("\n=== 测试与其他函数风格的对比 ===")
     
-    # check_array 风格
-    result_array = check_array(test_products, "name", "id", price="> 0", status="!= 'disabled'")
-    print(f"check_array 风格结果: {result_array}")
+    # check_list 风格 1
+    result_array = check_list(test_products, "name", "id", price="> 0", status="!= 'disabled'")
+    print(f"风格1结果: {result_array}")
     
-    # check_list 风格（与check函数一致）
+    # check_list 风格 2
     result_list = check_list(test_products, "name", "id", "price > 0", "status != 'disabled'")
-    print(f"check_list 风格结果: {result_list}")
+    print(f"风格2结果: {result_list}")
     
     # 验证结果一致性
     print(f"两种风格结果一致: {result_list == result_array}")

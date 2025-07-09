@@ -8,7 +8,7 @@ import sys
 import os
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'src'))
 
-from general_validator.checker import check, check_not_empty, check_array, check_nested, checker
+from general_validator.checker import check, check_not_empty, check_list, check_nested, checker
 
 def test_basic_validation():
     """测试基础校验功能"""
@@ -118,7 +118,7 @@ def test_specialized_functions():
         
         # 2. 列表批量校验
         print("2. 测试列表批量校验...")
-        check_array(response["data"]["productList"], 
+        check_list(response["data"]["productList"], 
                    "id", "name",                    # 默认非空
                    price="> 0", id="> 0")           # 带校验器
         print("✓ 列表批量校验通过")

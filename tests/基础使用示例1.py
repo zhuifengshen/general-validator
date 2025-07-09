@@ -9,7 +9,7 @@ import os
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'src'))
 
 from general_validator.logger import setup_logger
-from general_validator.checker import check, check_array, check_nested, checker
+from general_validator.checker import check, check_list, check_nested, checker
 
 def example_api_response_validation():
     """API响应数据校验示例"""
@@ -116,9 +116,9 @@ def example_list_validation():
         {"id": 3, "name": "商品3", "price": 299.99, "status": "inactive"}
     ]
     
-    print("使用check_array函数进行批量校验...")
+    print("使用check_list函数进行批量校验...")
     # 使用专用的列表校验函数
-    check_array(product_list,
+    check_list(product_list,
                "id", "name", "status",          # 默认非空校验
                id="> 0",                        # ID大于0
                price=">= 0",                    # 价格非负

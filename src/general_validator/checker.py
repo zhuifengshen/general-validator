@@ -498,12 +498,13 @@ def check_when(data, condition, *then):
     return check(data, conditional_rule)
 
 
-def check_list(data_list, *validations):
+def check_list(data_list, *field_names, **validators):
     """
     列表数据批量校验 - 简化版
     
-    :param data_list: 要校验的数据列表
-    :param validations: 校验规则，支持所有校验器语法，自动应用于数组每个元素
+    :param data_list: 数据列表
+    :param field_names: 字段名（默认非空校验，同时支持符号表达式校验和字典格式参数校验）
+    :param validators: 带校验器的字段 field_name="validator expression"}
     :return: True表示所有校验通过，False表示存在校验失败
     :raises: Exception: 当参数错误或数据结构异常时抛出异常
     
@@ -511,125 +512,15 @@ def check_list(data_list, *validations):
     # 默认非空校验
     check_list(productList, "id", "name", "price")
     
-    # 带校验器的校验
-    check_list(productList, "id > 0", "name", "price >= 0", "status == 'active'")
-    
-    # 混合校验类型
-    check_list(productList, 
-                "id > 0",                    # 数值比较
-                "name",                      # 默认非空
-                "price >= 10.5",             # 浮点数比较
-                "status == 'active'",        # 字符串等值
-                "category != 'test'",        # 不等于
-                "description *= 'good'",     # 包含字符串
-                "tags #> 0")                 # 数组长度大于0
-    
-    # 类型校验
-    check_list(productList, 
-                "id @= int",                 # 整数类型
-                "name @= str",               # 字符串类型
-                "price @= float",            # 浮点数类型
-                "is_active @= bool")         # 布尔类型
-    
-    # 长度校验
-    check_list(productList, 
-                "name #>= 3",                # 名称长度至少3个字符
-                "description #<= 100",       # 描述长度最多100个字符
-                "tags #> 0")                 # 标签数组不能为空
-    
-    # 字符串校验
-    check_list(productList, 
-                "name ^= 'Product'",         # 名称以'Product'开头
-                "url ~= '^https://'",        # URL正则匹配
-                "email $= '@example.com'")   # 邮箱以指定域名结尾
-    
-    # 复杂组合校验
-    check_list(productList, 
-                "id > 0", 
-                "name", 
-                "price >= 0", 
-                "status == 'active'",
-                "category != 'test'",
-                "description #>= 10",
-                "tags #> 0",
-                "created_at")
-    
-    # 与其他函数风格对比：
-    # check_array 风格：
-    # check_array(productList, "name", "id", price="> 0", status="== 'active'")
-    # 
-    # check_list 风格（与check函数一致）：
-    # check_list(productList, "name", "id", "price > 0", "status == 'active'")
-    
-    注意：
-    1. 函数会自动为每个字段路径添加 "*." 前缀来处理数组元素
-    2. 如果校验规则已经包含通配符 "*"，则不会重复添加
-    3. 支持所有校验器语法，与 check() 函数完全一致
-    4. 日志输出级别可通过项目的 --log-level 参数控制
-    """
-    
-    # 参数验证
-    if not validations:
-        raise ValueError("至少需要提供一个校验规则")
-    
-    if not isinstance(data_list, list):
-        raise TypeError(f"data_list必须是列表，当前类型: {type(data_list)}")
-    
-    # 打印任务信息
-    log_info(f"列表数据批量校验（统一风格） - 列表长度: {len(data_list)}, 校验规则数: {len(validations)}")
-    log_debug(f"校验规则: {list(validations)}")
-    
-    # 处理校验规则，自动添加 "*." 前缀
-    processed_rules = []
-    for validation in validations:
-        if isinstance(validation, str):
-            # 字符串格式的校验规则
-            if '*' in validation:
-                # 如果已经包含通配符，直接使用
-                processed_rules.append(validation)
-            else:
-                # 自动添加 "*." 前缀
-                processed_rules.append(f"*.{validation}")
-        elif isinstance(validation, dict):
-            # 字典格式的校验规则
-            field_path = validation.get('field', '')
-            if '*' in field_path:
-                # 如果已经包含通配符，直接使用
-                processed_rules.append(validation)
-            else:
-                # 自动添加 "*." 前缀
-                new_validation = validation.copy()
-                new_validation['field'] = f"*.{field_path}"
-                processed_rules.append(new_validation)
-        else:
-            # 其他格式直接使用
-            processed_rules.append(validation)
-    
-    log_debug(f"处理后的校验规则: {processed_rules}")
-    
-    # 调用底层的 check 函数进行校验
-    return check(data_list, *processed_rules)
-
-
-def check_array(data_list, *field_names, **validators):
-    """
-    列表数据批量校验 - 参数示意版
-    
-    :param data_list: 数据列表
-    :param field_names: 字段名（默认非空校验）
-    :param validators: 带校验器的字段 field_name="validator expression"
-    :return: True表示所有校验通过，False表示存在校验失败
-    :raises: Exception: 当参数错误或数据结构异常时抛出异常
-    
-    示例：
-    # 默认非空校验
-    check_array(productList, "id", "name", "price")
-    
     # 带校验器
-    check_array(productList, "name", id="> 0", price=">= 0")
+    check_list(productList, "name", id="> 0", price=">= 0")
+    或
+    check_list(productList, "name", "id > 0", "price >= 0")
     
     # 混合使用
-    check_array(productList, "name", "description", id="> 0", status="== 'active'")
+    check_list(productList, "name", "description", id="> 0", status="== 'active'")
+    或
+    check_list(productList, "name", "description", "id > 0", "status == 'active'")
     
     注意：日志输出级别可通过项目的 --log-level 参数控制
     """

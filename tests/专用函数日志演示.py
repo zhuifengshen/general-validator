@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """
 专用函数日志演示脚本
-展示check_array和check_nested函数的详细日志输出
+展示check_list和check_nested函数的详细日志输出
 """
 
 import sys
@@ -12,11 +12,11 @@ import os
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'src'))
 
 from general_validator.logger import setup_logger
-from general_validator.checker import check, check_array, check_nested, check_when
+from general_validator.checker import check, check_list, check_nested, check_when
 
-def demo_check_array():
-    """演示check_array函数的日志输出"""
-    print("\n=== check_array 函数日志演示 ===")
+def demo_check_list():
+    """演示check_list函数的日志输出"""
+    print("\n=== check_list 函数日志演示 ===")
     
     # 测试数据
     product_list = [
@@ -25,8 +25,8 @@ def demo_check_array():
         {"id": 0, "name": "", "price": -5.0, "status": "inactive"}  # 包含会失败的数据
     ]
     
-    print("调用: check_array(product_list, 'id', 'name', price='> 0', status=\"== 'active'\")")
-    result = check_array(product_list, 
+    print("调用: check_list(product_list, 'id', 'name', price='> 0', status=\"== 'active'\")")
+    result = check_list(product_list, 
                        "id", "name",                    # 默认非空校验
                        price="> 0", status="== 'active'")  # 带校验器
     
@@ -163,7 +163,7 @@ def main():
     # 设置DEBUG级别以查看详细日志
     setup_logger("DEBUG")
     
-    demo_check_array()
+    demo_check_list()
     demo_check_nested()
     
     # 测试日志级别
