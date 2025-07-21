@@ -67,8 +67,6 @@ def check(data, *validations):
     
     # 嵌套列表校验
     check(response, "data.productList.*.purchasePlan.*.id > 0")
-    
-    注意：日志输出级别可通过项目的 --log-level 参数控制
     """
     
     # 打印任务信息和数据概览
@@ -479,7 +477,6 @@ def check_when(data, condition, *then):
     注意：
     1. 当条件满足时，所有then校验都必须通过才算成功
     2. 当条件不满足时，跳过所有then校验（返回True）
-    3. 日志输出级别可通过项目的 --log-level 参数控制
     """
     
     # 参数验证
@@ -521,8 +518,6 @@ def check_list(data_list, *field_names, **validators):
     check_list(productList, "name", "description", id="> 0", status="== 'active'")
     或
     check_list(productList, "name", "description", "id > 0", "status == 'active'")
-    
-    注意：日志输出级别可通过项目的 --log-level 参数控制
     """
     
     total_fields = len(field_names) + len(validators)
@@ -961,8 +956,6 @@ class DataChecker:
         
         :return: True表示所有校验通过，False表示存在校验失败
         :raises: Exception: 当参数错误或数据结构异常时抛出异常
-        
-        注意：日志输出级别可通过项目的 --log-level 参数控制
         """
         return check(self.data, *self.rules)
 

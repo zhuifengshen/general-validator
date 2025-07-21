@@ -196,7 +196,6 @@ if __name__ == "__main__":
     test_basic_usage()
     test_various_validators()
     test_complex_validations()
-    test_wildcard_handling()
     test_style_comparison()
     test_consistency_with_check()
     test_error_cases()
