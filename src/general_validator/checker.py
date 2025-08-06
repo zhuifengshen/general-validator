@@ -312,6 +312,45 @@ def _check_type_match(check_value, expect_value):
         raise TypeError(f"类型匹配检查失败: {str(e)}")
 
 
+def _safe_numeric_compare(check_value, expect_value):
+    """安全的数值比较，支持字符串数字自动转换
+    
+    :param check_value: 要检查的值
+    :param expect_value: 期望值
+    :return: (转换后的check_value, 转换后的expect_value)
+    :raises: ValueError: 当值无法转换为数字时
+    """
+    def to_number(value):
+        """将值转换为数字"""
+        if isinstance(value, (int, float)):
+            return value
+        elif isinstance(value, str):
+            # 去除首尾空格
+            value = value.strip()
+            # 尝试转换为整数
+            try:
+                return int(value)
+            except ValueError:
+                pass
+            # 尝试转换为浮点数
+            try:
+                return float(value)
+            except ValueError:
+                pass
+        # 无法转换，返回原值
+        return value
+    
+    # 转换两个值
+    converted_check = to_number(check_value)
+    converted_expect = to_number(expect_value)
+    
+    # 如果任一值无法转换为数字，回退到原始比较
+    if (not isinstance(converted_check, (int, float)) or not isinstance(converted_expect, (int, float))):
+        return check_value, expect_value
+    
+    return converted_check, converted_expect
+
+
 def _execute_validator(validator, check_value, expect_value, field_path):
     """执行具体的校验
     
@@ -331,16 +370,24 @@ def _execute_validator(validator, check_value, expect_value, field_path):
             return check_value != expect_value
         
         elif validator == "gt":
-            return check_value > expect_value
+            # 数值比较校验器 - 添加智能类型转换
+            check_val, expect_val = _safe_numeric_compare(check_value, expect_value)
+            return check_val > expect_val
         
         elif validator == "ge":
-            return check_value >= expect_value
+            # 数值比较校验器 - 添加智能类型转换
+            check_val, expect_val = _safe_numeric_compare(check_value, expect_value)
+            return check_val >= expect_val
         
         elif validator == "lt":
-            return check_value < expect_value
+            # 数值比较校验器 - 添加智能类型转换
+            check_val, expect_val = _safe_numeric_compare(check_value, expect_value)
+            return check_val < expect_val
         
         elif validator == "le":
-            return check_value <= expect_value
+            # 数值比较校验器 - 添加智能类型转换
+            check_val, expect_val = _safe_numeric_compare(check_value, expect_value)
+            return check_val <= expect_val
         
         elif validator == "contains":
             return expect_value in check_value
