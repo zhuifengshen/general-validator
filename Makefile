@@ -23,6 +23,7 @@ help:
 	@echo "  make release VERSION=2.8.4"
 	@echo "  make release-test VERSION=2.8.4"
 	@echo "  make release VERSION=2.8.4 MESSAGE='修复重要bug'"
+	@echo "  make quick-release VERSION=2.8.4 MESSAGE='修复重要bug'"
 	@echo ""
 
 # 安装依赖
